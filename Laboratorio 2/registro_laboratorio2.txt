@@ -1,0 +1,66 @@
+Laboratorio 2 - Una pantalla que vive y muere
+Miranda Guerra
+
+Etapa 1
+SegundaActivity creada. Intent explicito con extra "nombre".
+El atras vuelve a MainActivity tal como la deje (pila de retroceso).
+
+Etapa 2 - Entrelazado (Logcat, tag:VIDA)
+
+Ida (Main -> Segunda):
+Main → onPause
+Segunda → onCreate
+Segunda → onStart
+Segunda → onResume
+Main → onStop
+
+Vuelta (atras):
+Segunda → onPause
+Main → onStart
+Main → onResume
+Segunda → onStop
+Segunda → onDestroy
+
+Main no se recrea al volver: no hay onCreate, estaba detenida no muerta.
+Segunda se destruye al salir de la pila.
+
+Etapa 3 - Tabla (con Segunda abierta)
+
+#  Accion                              Prediccion                         Observado
+1  Home (app a fondo)                  Segunda onPause, onStop            Segunda → onPause, Segunda → onStop
+2  Volver desde recientes              onStart, onResume (sin onCreate)   Segunda → onStart, Segunda → onResume
+3  Apagar pantalla                     igual que Home                     Segunda → onPause, Segunda → onStop
+4  Encender y desbloquear              onStart, onResume                  Segunda → onStart, Segunda → onResume
+5  Cortina de notificaciones           nada o solo pause/resume           no vi nada (la cortina no me tapo la activity)
+6  Algo encima y volver                pause, stop, start, resume         Segunda → onPause / onStop y al volver onStart / onResume
+
+Lectura:
+- Detenerse no es morir: ninguna de las seis dio onDestroy.
+- El sistema avisa siempre y en orden.
+- Yo no decidi esas transiciones: el usuario y el sistema mueven los hilos.
+
+Etapa 4 - Giro
+Sume hasta 7 y escribi "prueba giro" en notas.
+Al rotar:
+Segunda → onPause
+Segunda → onStop
+Segunda → onDestroy
+Segunda → onCreate
+Segunda → onStart
+Segunda → onResume
+
+Contador volvio a 0 (variable de la instancia destruida).
+La frase del EditText se quedo (vista con id, el sistema la restaura).
+Por que destruye al rotar: cambio la configuracion (orientacion) y recrear recarga layout/recursos coherentes.
+
+Etapa 5 - Muerte por memoria
+PID anotado con la app en Segunda.
+Home + adb shell am kill com.example.holayo
+Al volver desde recientes: PID distinto, Segunda → onCreate/onStart/onResume.
+Frase viva, contador en 0, el saludo sigue con mi nombre (el Intent se conserva).
+Conclusion: para el usuario no paso nada, por debajo el proceso murio entero. Lo que no se guarda, vuelve en blanco.
+
+Etapa 6 - Debugger
+Breakpoint en contador++. Debug (bichito). Al tocar Sumar se congela.
+Vi contador antes y despues con Step Over (F8). Resume (F9) sigue normal.
+Logcat = que paso. Debugger = que esta pasando aca.

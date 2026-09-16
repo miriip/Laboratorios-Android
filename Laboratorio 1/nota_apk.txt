@@ -1,0 +1,7 @@
+﻿Checklist Lab 1 - Miranda Guerra
+
+Proyecto: HolaYo (Empty Views Activity, minSdk 26, paquete com.example.holayo)
+APK: app-debug.apk
+Ruta en el proyecto: HolaYo\app\build\outputs\apk\debug\app-debug.apk
+Copia para entregar: Laboratorio 1\HolaYo-app-debug.apk
+Peso: 5,60 MB (5869332 bytes)

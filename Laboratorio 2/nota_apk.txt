@@ -1,0 +1,7 @@
+﻿Checklist Lab 2 - Miranda Guerra
+
+Proyecto: HolaYo con SegundaActivity
+APK: app-debug.apk
+Ruta en el proyecto: HolaYo\app\build\outputs\apk\debug\app-debug.apk
+Copia para entregar: Laboratorio 2\HolaYo-app-debug.apk
+Peso: 5,60 MB (5873177 bytes)
