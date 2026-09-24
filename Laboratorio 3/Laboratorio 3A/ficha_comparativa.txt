@@ -1,6 +1,8 @@
 Laboratorio 3A — Ficha comparativa (columna A: modelo tradicional)
 Miranda Guerra
 
+Columna A — Laboratorio 3A
+
 1) ¿Cuántas piezas hicieron falta para mostrar la lista?
 Cuatro: el layout de la fila (item_app.xml), el ViewHolder, el AppAdapter con onCreate/onBind/getItemCount, y el enganche en MainActivity (layoutManager + adapter).
 
@@ -18,3 +20,34 @@ Casi nada de los filtros: aplicarFiltros() usa findViewById y el adaptador. Sin 
 
 6) ¿Qué se sintió mejor y qué peor?
 Mejor: se entiende qué hace cada pieza, y el click/intent es igual que en el lab 2. Peor: hay que acordarse de avisar a la lista (notify / aplicarFiltros / onResume). Si te olvidás un camino, la pantalla miente. El giro que apaga el filtro sin crashear es lo más raro.
+
+Inventario del estado antes de la mudanza (3B)
+
+Texto de búsqueda: vive en el EditText. Sobrevive al giro y Android puede restaurarlo al recrear la pantalla. No tiene una copia propia en el ViewModel de 3A.
+Modo "solo favoritas": vive en la variable soloFavoritas de MainActivity. No sobrevive al giro ni a la muerte del proceso.
+Favoritos: viven en esFavorita dentro de cada App del singleton Catalogo. Sobreviven al giro, pero no a la muerte del proceso.
+Lista visible: no se guarda; se deriva de la búsqueda, el modo y los favoritos cada vez que se llama aplicarFiltros().
+
+Laboratorio 3B — Columna B (MVVM con LiveData)
+
+1) ¿Cuántas piezas hicieron falta para mostrar la lista?
+Para dibujarla siguen estando el layout de la fila, el ViewHolder, el AppAdapter y el enganche con RecyclerView en MainActivity. Se suma AppTecaViewModel para guardar el estado y calcular la lista; MainActivity observa LiveData y entrega el resultado al adaptador.
+
+2) ¿Dónde vive el estado de la pantalla (búsqueda, modo, favoritos)?
+La búsqueda se muestra en el EditText y su copia de trabajo query vive en AppTecaViewModel. El modo soloFavoritas y la listaVisible también viven en el ViewModel. Los favoritos siguen en las Apps del singleton Catalogo.
+
+3) ¿Qué sobrevivió y qué murió al rotar? ¿Y al morir el proceso?
+Al girar se recrea MainActivity, pero by viewModels() obtiene la misma instancia del ViewModel: sobreviven query, soloFavoritas y la lista derivada. El texto del EditText también se restaura como estado de la vista. Los favoritos siguen en Catalogo mientras vive el proceso. Si muere el proceso, se pierden el ViewModel y el singleton, así que el modo vuelve a su valor inicial y se borran los favoritos; el texto del EditText puede restaurarse desde el estado que Android guarda para la vista.
+
+4) ¿Qué costaría agregar un campo nuevo al ítem (por ej. un puntaje)?
+El campo se agrega al modelo y a los datos. Si se muestra en la lista, se toca item_app.xml y el ViewHolder/bind del adaptador; si se usa para filtrar, también el ViewModel. La lógica de filtros ya no requiere cambios en MainActivity.
+
+5) ¿Qué se podría probar de esta lógica sin abrir un emulador?
+Se puede instanciar AppTecaViewModel, llamarle buscar(), alternarModo() y alternarFavorita(), y observar listaVisible. La Activity y el adaptador no hacen falta para probar la lógica; LiveData en tests JVM requiere una regla que ejecute sus tareas de forma síncrona.
+
+6) ¿Qué se sintió mejor y qué peor?
+Mejor: el estado no depende de que MainActivity sobreviva al giro y la pantalla recibe los cambios por suscripciones. Los filtros quedaron en una clase que se puede probar aparte. Peor: el detalle todavía modifica Catalogo directamente y el ViewModel de la lista no se entera solo; al volver, MainActivity le pide refrescar(). Si muere el proceso, ni ViewModel ni Catalogo conservan sus datos.
+
+Comparación A y B
+
+En 3A el modo vivía en MainActivity y se perdía al girar; en 3B vive en el ViewModel retenido por el sistema durante la recreación. En 3A la Activity calculaba y redibujaba la lista; en 3B el ViewModel publica el resultado y la Activity lo observa. En los dos modelos, el catálogo sigue siendo memoria del proceso y el cambio hecho desde el detalle necesita un refresco al regresar.
