@@ -1,0 +1,20 @@
+Laboratorio 3A — Ficha comparativa (columna A: modelo tradicional)
+Miranda Guerra
+
+1) ¿Cuántas piezas hicieron falta para mostrar la lista?
+Cuatro: el layout de la fila (item_app.xml), el ViewHolder, el AppAdapter con onCreate/onBind/getItemCount, y el enganche en MainActivity (layoutManager + adapter).
+
+2) ¿Dónde vive el estado de la pantalla (búsqueda, modo, favoritos)?
+La búsqueda vive en el EditText. El modo "solo favoritas" es una variable de la Activity (soloFavoritas). Los favoritos viven mutados en cada App del object Catalogo. La lista que se ve no se guarda: se arma en aplicarFiltros() cada vez.
+
+3) ¿Qué sobrevivió y qué murió al rotar? ¿Y al morir el proceso?
+Al rotar se apaga el modo solo favoritas: la Activity se destruye y nace otra con soloFavoritas = false. Los favoritos siguen porque Catalogo es un singleton del proceso. Si mato el proceso (adb shell am kill), se pierde todo, también las estrellas.
+
+4) ¿Qué costaría agregar un campo nuevo al ítem (por ej. un puntaje)?
+Tocar varias cosas: el data class, el catálogo, item_app.xml, el ViewHolder, onBindViewHolder, y si también va en el detalle, activity_detalle y DetalleActivity. Un campo extra recorre todo el camino a mano.
+
+5) ¿Qué se podría probar de esta lógica sin abrir un emulador?
+Casi nada de los filtros: aplicarFiltros() usa findViewById y el adaptador. Sin una Activity viva no hay forma fácil de probarlo. El modelo App/Catalogo sí se podría mirar aparte, pero la lógica de verdad está mezclada con la pantalla.
+
+6) ¿Qué se sintió mejor y qué peor?
+Mejor: se entiende qué hace cada pieza, y el click/intent es igual que en el lab 2. Peor: hay que acordarse de avisar a la lista (notify / aplicarFiltros / onResume). Si te olvidás un camino, la pantalla miente. El giro que apaga el filtro sin crashear es lo más raro.

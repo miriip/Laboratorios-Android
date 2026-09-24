@@ -8,7 +8,8 @@ import androidx.recyclerview.widget.RecyclerView
 
 class AppAdapter(
     private var items: List<App>,
-    private val onAppClick: (App) -> Unit
+    private val onAppClick: (App) -> Unit,
+    private val onFavoritoClick: (App) -> Unit
 ) : RecyclerView.Adapter<AppAdapter.AppViewHolder>() {
 
     class AppViewHolder(v: View) : RecyclerView.ViewHolder(v) {
@@ -29,7 +30,13 @@ class AppAdapter(
         holder.tvCategoria.text = app.categoria
         holder.tvEstrella.text = if (app.esFavorita) "★" else "☆"
         holder.itemView.setOnClickListener { onAppClick(app) }
+        holder.tvEstrella.setOnClickListener { onFavoritoClick(app) }
     }
 
     override fun getItemCount() = items.size
+
+    fun actualizarLista(nueva: List<App>) {
+        items = nueva
+        notifyDataSetChanged()
+    }
 }
