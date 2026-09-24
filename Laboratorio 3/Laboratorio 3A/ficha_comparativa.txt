@@ -51,3 +51,35 @@ Mejor: el estado no depende de que MainActivity sobreviva al giro y la pantalla 
 Comparación A y B
 
 En 3A el modo vivía en MainActivity y se perdía al girar; en 3B vive en el ViewModel retenido por el sistema durante la recreación. En 3A la Activity calculaba y redibujaba la lista; en 3B el ViewModel publica el resultado y la Activity lo observa. En los dos modelos, el catálogo sigue siendo memoria del proceso y el cambio hecho desde el detalle necesita un refresco al regresar.
+
+Laboratorio 3C — Columna C (Compose + MVVM)
+
+1) ¿Cuántas piezas hicieron falta para mostrar la lista?
+La fila y la lista se describen con composables. LazyColumn organiza las filas y usa el id como key; no hay layout de fila, ViewHolder ni adaptador. La Activity solo conecta el ViewModel con la pantalla Compose.
+
+2) ¿Dónde vive el estado de la pantalla (búsqueda, modo, favoritos)?
+La lista visible y soloFavoritas viven en StateFlow del ViewModel. El query que filtra también está en el ViewModel. El texto del campo se conserva con rememberSaveable en Compose y cada cambio llama buscar(); por eso el valor del campo y el query son estados separados. Los favoritos están en Catalogo, en memoria del proceso. La selección del detalle vive en el ViewModel.
+
+3) ¿Qué sobrevivió y qué murió al rotar? ¿Y al morir el proceso?
+Al girar sobrevivieron el ViewModel, el modo, los favoritos, la búsqueda y el detalle seleccionado. Al morir el proceso, el ViewModel y Catalogo se reiniciaron: se borraron el modo y las estrellas. En la prueba de restauración, el texto “WhatsApp” volvió en el campo, pero la lista mostró todas las apps porque query volvió vacío en el ViewModel y restaurar rememberSaveable no vuelve a emitir onValueChange. Es la diferencia entre restaurar el valor visual y restaurar el estado que aplica el filtro.
+
+4) ¿Qué costaría agregar un campo nuevo al ítem (por ej. un puntaje)?
+Se agrega al data class y a cada dato del catálogo; para mostrarlo se incorpora al composable de la fila o del detalle. No hay que actualizar XML ni enlazarlo manualmente en un ViewHolder. Solo hace falta tocar el ViewModel si ese campo participa en filtros u otras reglas.
+
+5) ¿Qué se podría probar de esta lógica sin abrir un emulador?
+El ViewModel se puede instanciar y probar llamando sus eventos, y verificando los StateFlow de lista, modo y selección. La UI Compose también permite pruebas de interfaz aparte. La Activity no contiene la lógica de filtrado.
+
+6) ¿Qué se sintió mejor y qué peor?
+Mejor: la UI se vuelve a dibujar al observar el estado, y el detalle y la lista comparten el mismo catálogo del ViewModel; al cambiar una estrella, al volver la fila ya está actualizada. El buscador sigue el recorrido valor del estado hacia el campo y eventos de cada tecla hacia el ViewModel. Peor: hay que aprender el modelo declarativo y el detalle sigue una navegación sencilla hecha con una selección nullable y un if; una app grande necesitaría navegación más completa. La muerte del proceso aún borra los datos de favoritos porque no hay persistencia.
+
+Comparación A, B y C
+
+En A la Activity modifica y vuelve a dibujar la lista con el adaptador; en B el ViewModel publica datos por LiveData pero siguen las piezas de RecyclerView; en C Compose describe la lista y observa StateFlow, sin XML de pantalla ni adaptador. El ViewModel de B y C sobrevive al giro, pero no a la muerte del proceso. En C el detalle usa la misma fuente de estado que la lista, así que desaparece el refresco manual que necesitaba B. La búsqueda de C tiene dos estados en la versión base: el texto guardado por Compose y el query del ViewModel; por eso pueden quedar desalineados tras restaurar el proceso. Los favoritos son datos y necesitan almacenamiento persistente para sobrevivir a la muerte del proceso.
+
+Preguntas de cierre
+
+1) ¿Reescribiría una app Views estable y rentable solo para pasarla a Compose?
+No. La columna A sigue sirviendo y una reescritura completa tiene costo y riesgo de introducir errores sin mejorar por sí sola el producto. Mantendría el código que funciona y migraría de forma gradual una pantalla o módulo cuando haya una razón concreta, como cambios frecuentes o una función nueva que se beneficie de Compose.
+
+2) ¿Qué stack elegiría para un producto nuevo y por qué?
+Elegiría Compose + MVVM. La columna C requiere menos piezas para la lista que A y B, la UI reacciona al estado publicado por el ViewModel y la lógica se puede probar sin abrir la pantalla. La prueba de proceso también muestra el límite: para conservar favoritos hace falta persistencia de datos, no solo otro mecanismo de UI.
