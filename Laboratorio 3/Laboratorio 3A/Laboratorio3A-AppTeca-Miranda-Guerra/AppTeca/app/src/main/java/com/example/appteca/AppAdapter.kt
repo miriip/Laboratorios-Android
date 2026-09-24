@@ -7,7 +7,8 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
 class AppAdapter(
-    private var items: List<App>
+    private var items: List<App>,
+    private val onAppClick: (App) -> Unit
 ) : RecyclerView.Adapter<AppAdapter.AppViewHolder>() {
 
     class AppViewHolder(v: View) : RecyclerView.ViewHolder(v) {
@@ -27,6 +28,7 @@ class AppAdapter(
         holder.tvNombre.text = app.nombre
         holder.tvCategoria.text = app.categoria
         holder.tvEstrella.text = if (app.esFavorita) "★" else "☆"
+        holder.itemView.setOnClickListener { onAppClick(app) }
     }
 
     override fun getItemCount() = items.size
