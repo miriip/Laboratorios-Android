@@ -68,7 +68,7 @@ fun AppTeca3Theme(content: @Composable () -> Unit) {
 @Composable
 fun PantallaAppTeca(vm: AppTecaViewModel = viewModel()) {
     val lista by vm.listaVisible.collectAsStateWithLifecycle()
-    val modoFav by vm.modoSoloFavoritas.collectAsStateWithLifecycle()
+    val soloFavoritas by vm.modoSoloFavoritas.collectAsStateWithLifecycle()
     val seleccionada by vm.appSeleccionada.collectAsStateWithLifecycle()
     var textoBusqueda by rememberSaveable { mutableStateOf("") }
     val safeInsets = Modifier.statusBarsPadding().navigationBarsPadding()
@@ -105,7 +105,7 @@ fun PantallaAppTeca(vm: AppTecaViewModel = viewModel()) {
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
             ) {
-                Text(if (modoFav) "★ Solo favoritas" else "☆ Todas")
+                Text(if (soloFavoritas) "★ Solo favoritas" else "☆ Todas")
             }
 
             ListaApps(
